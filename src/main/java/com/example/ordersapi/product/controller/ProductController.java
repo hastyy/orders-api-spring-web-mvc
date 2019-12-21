@@ -4,10 +4,12 @@ import com.example.ordersapi.product.api.ProductAPI;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class ProductController implements ProductAPI {
@@ -16,6 +18,14 @@ public class ProductController implements ProductAPI {
 
     @Override
     public Set<Product> getAllProducts() {
-        return productService.getAllProducts();
+
+        log.info("Listing products");
+
+        Set<Product> products = productService.getAllProducts();
+
+        log.info("Returning #{} products", products.size());
+        log.debug("Products: {}", products);
+
+        return products;
     }
 }
