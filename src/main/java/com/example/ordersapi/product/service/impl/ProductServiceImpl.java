@@ -1,6 +1,7 @@
 package com.example.ordersapi.product.service.impl;
 
 import com.example.ordersapi.product.entity.Product;
+import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.repository.ProductRepository;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -20,5 +21,11 @@ public class ProductServiceImpl implements ProductService {
     public Set<Product> getAllProducts() {
         return StreamSupport.stream(productRepository.findAll().spliterator(), false)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Product getOneProduct(Integer id) throws ProductNotFoundException {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 }

@@ -2,6 +2,7 @@ package com.example.ordersapi.product.controller;
 
 import com.example.ordersapi.product.api.ProductAPI;
 import com.example.ordersapi.product.entity.Product;
+import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,4 +29,18 @@ public class ProductController implements ProductAPI {
 
         return products;
     }
+
+    @Override
+    public Product getProductById(Integer id) throws ProductNotFoundException {
+
+        log.info("Fetching product with id {}", id);
+
+        Product product = productService.getOneProduct(id);
+
+        log.info("Retuning found product");
+        log.debug("Product: {}", product);
+
+        return product;
+    }
+
 }

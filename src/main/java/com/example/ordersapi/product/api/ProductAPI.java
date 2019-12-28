@@ -1,8 +1,10 @@
 package com.example.ordersapi.product.api;
 
 import com.example.ordersapi.product.entity.Product;
+import com.example.ordersapi.product.exception.ProductNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
@@ -16,5 +18,9 @@ public interface ProductAPI {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     Set<Product> getAllProducts();
+
+    @GetMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    Product getProductById(@PathVariable Integer id) throws ProductNotFoundException;
 
 }
