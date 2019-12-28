@@ -3,10 +3,9 @@ package com.example.ordersapi.product.service.impl;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.repository.ProductRepository;
-import com.example.ordersapi.product.service.ProductService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,12 +25,8 @@ class ProductServiceImplTest {
     @Mock
     ProductRepository productRepository;
 
-    ProductService productService;
-
-    @BeforeEach
-    void setUp() {
-        productService = new ProductServiceImpl(productRepository);
-    }
+    @InjectMocks
+    ProductServiceImpl productService;
 
     @Test
     void getAllProducts_should_return_found_products() {
