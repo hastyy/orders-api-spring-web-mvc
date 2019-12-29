@@ -1,7 +1,9 @@
 package com.example.ordersapi.product.controller;
 
 import com.example.ordersapi.product.api.ProductAPI;
+import com.example.ordersapi.product.api.dto.CreateProductDto;
 import com.example.ordersapi.product.entity.Product;
+import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,14 +12,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -96,6 +105,233 @@ class ProductControllerTest {
 
         // then
         mockMvc.perform(get(ProductAPI.BASE_URL + "/" + invalidId))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_created_product_and_201_when_input_is_okay() throws Exception {
+        // given
+        final String NAME = "Product Name";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        Product expectedProduct = new Product();
+        expectedProduct.setName(NAME);
+        expectedProduct.setPrice(PRICE);
+
+        // when
+        when(productService.createProduct(productDto)).thenReturn(expectedProduct);
+
+        // then
+        MvcResult response = mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String responseBodyJson = response.getResponse().getContentAsString();
+        Product responseProduct = jsonMapper.readValue(responseBodyJson, Product.class);
+
+        assertThat(responseProduct.getName(), is(equalTo(productDto.getName())));
+        assertThat(responseProduct.getPrice(), is(equalTo(productDto.getPrice())));
+        assertThat(responseProduct, is(equalTo(expectedProduct)));
+    }
+
+    @Test
+    void createProduct_should_return_409_when_input_is_okay_but_product_name_already_exists() throws Exception {
+        // given
+        final String NAME = "Product Name";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+        when(productService.createProduct(any())).thenThrow(new ProductAlreadyExistsException(NAME));
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_missing_product_name() throws Exception {
+        // given
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_name_is_empty() throws Exception {
+        // given
+        final String NAME = "";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_name_is_blank() throws Exception {
+        // given
+        final String NAME = "        ";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_name_is_above_80_characters() throws Exception {
+        // given
+        final String NAME = "012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_price_is_null() throws Exception {
+        // given
+        final String NAME = "My Product";
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_price_has_more_than_2_decimal_places() throws Exception {
+        // given
+        final String NAME = "My Product";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.956);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_price_is_negative_value() throws Exception {
+        // given
+        final String NAME = "My Product";
+        final BigDecimal PRICE = BigDecimal.valueOf(-2.95);
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_image_url_is_not_a_url() throws Exception {
+        // given
+        final String NAME = "My Product";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+        final String IMAGE_URL = "this-is-not-a-url.com";
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+        productDto.setImageUrl(IMAGE_URL);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createProduct_should_return_400_when_product_description_is_too_big() throws Exception {
+        // given
+        final String NAME = "My Product";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+        final String DESCRIPTION = "I should not be testing this further. I should not be testing this further. " +
+                "I should not be testing this further. I should not be testing this further. " +
+                "I should not be testing this further. I should not be testing this further. " +
+                "I should not be testing this further.";
+
+        CreateProductDto productDto = new CreateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+        productDto.setDescription(DESCRIPTION);
+
+        // when
+
+        // then
+        mockMvc.perform(post(ProductAPI.BASE_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
     }
 

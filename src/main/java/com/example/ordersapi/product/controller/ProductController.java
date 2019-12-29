@@ -1,13 +1,16 @@
 package com.example.ordersapi.product.controller;
 
 import com.example.ordersapi.product.api.ProductAPI;
+import com.example.ordersapi.product.api.dto.CreateProductDto;
 import com.example.ordersapi.product.entity.Product;
+import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Set;
 
 @Slf4j
@@ -38,6 +41,19 @@ public class ProductController implements ProductAPI {
         Product product = productService.getOneProduct(id);
 
         log.info("Retuning found product");
+        log.debug("Product: {}", product);
+
+        return product;
+    }
+
+    @Override
+    public Product createProduct(@Valid CreateProductDto productDto) throws ProductAlreadyExistsException {
+
+        log.info("Creating product: {}", productDto.getName());
+
+        Product product = productService.createProduct(productDto);
+
+        log.info("Created product: {}", product.getName());
         log.debug("Product: {}", product);
 
         return product;

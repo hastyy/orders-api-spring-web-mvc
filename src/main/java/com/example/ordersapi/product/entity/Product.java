@@ -13,13 +13,13 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 80)
     private String name;
 
     @Column
     private String description;
 
-    @Column
+    @Column(length = 80)
     private String imageUrl;
 
     @Column(nullable = false)

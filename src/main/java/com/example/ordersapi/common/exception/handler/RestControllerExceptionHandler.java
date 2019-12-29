@@ -1,5 +1,6 @@
 package com.example.ordersapi.common.exception.handler;
 
+import com.example.ordersapi.common.exception.ConflictException;
 import com.example.ordersapi.common.exception.NotFoundException;
 import com.example.ordersapi.common.exception.RestException;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ import java.io.IOException;
 @RestControllerAdvice
 public class RestControllerExceptionHandler {
 
-    @ExceptionHandler({NotFoundException.class})
+    @ExceptionHandler({NotFoundException.class, ConflictException.class})
     public void handleException(RestException ex, HttpServletResponse response) throws IOException {
         log.warn(ex.getMessage());
         response.sendError(ex.getHttpStatus().value(), ex.getMessage());
