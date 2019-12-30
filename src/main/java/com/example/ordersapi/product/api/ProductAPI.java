@@ -1,6 +1,7 @@
 package com.example.ordersapi.product.api;
 
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -25,5 +26,10 @@ public interface ProductAPI {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     Product createProduct(@RequestBody CreateProductDto productDto) throws ProductAlreadyExistsException;
+
+    @PatchMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    Product updateProduct(@PathVariable Integer id, @RequestBody UpdateProductDto productDto)
+            throws ProductNotFoundException, ProductAlreadyExistsException;
 
 }

@@ -1,6 +1,7 @@
 package com.example.ordersapi.product.service.impl;
 
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -24,7 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
@@ -98,7 +99,7 @@ class ProductServiceImplTest {
 
         // when
         when(productMapper.createProductDtoToProduct(productDto)).thenReturn(mappedProduct);
-        when(productRepository.save(mappedProduct)).thenReturn(expectedProduct);
+        when(productRepository.saveAndFlush(mappedProduct)).thenReturn(expectedProduct);
 
         // then
         Product savedProduct = productService.createProduct(productDto);
@@ -115,9 +116,130 @@ class ProductServiceImplTest {
 
         // when
         when(productMapper.createProductDtoToProduct(productDto)).thenReturn(mappedProduct);
-        when(productRepository.save(mappedProduct)).thenThrow(DataIntegrityViolationException.class);
+        when(productRepository.saveAndFlush(mappedProduct)).thenThrow(DataIntegrityViolationException.class);
 
         // then
         assertThrows(ProductAlreadyExistsException.class, () -> productService.createProduct(productDto));
+    }
+
+    @Test
+    void updateProduct_should_return_updated_product() throws Exception {
+        //  given
+        final Integer ID = 1;
+        final String INITIAL_NAME = "My Product";
+        final BigDecimal INITIAL_PRICE = BigDecimal.valueOf(2.95);
+        final String UPDATED_NAME = "My Product Updated";
+        final BigDecimal UPDATED_PRICE = BigDecimal.valueOf(3.60);
+
+        UpdateProductDto productDto = new UpdateProductDto();
+        productDto.setName(UPDATED_NAME);
+        productDto.setPrice(UPDATED_PRICE);
+
+        Product initialProduct = new Product();
+        initialProduct.setId(ID);
+        initialProduct.setName(INITIAL_NAME);
+        initialProduct.setPrice(INITIAL_PRICE);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setId(ID);
+        updatedProduct.setName(UPDATED_NAME);
+        updatedProduct.setPrice(UPDATED_PRICE);
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.of(initialProduct));
+        when(productRepository.saveAndFlush(updatedProduct)).thenReturn(updatedProduct);
+
+        // then
+        Product returnedProduct = productService.updateProduct(ID, productDto);
+        assertThat(returnedProduct.getName(), equalTo(UPDATED_NAME));
+        assertThat(returnedProduct.getPrice(), equalTo(UPDATED_PRICE));
+
+        verify(productRepository, times(1)).findById(ID);
+        verify(productRepository, times(1)).saveAndFlush(updatedProduct);
+    }
+
+    @Test
+    void updateProduct_should_throw_product_not_found_exception_when_product_does_not_exist() {
+        //  given
+        final Integer ID = 1;
+        final UpdateProductDto productDto = new UpdateProductDto();
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(ID, productDto));
+    }
+
+    @Test
+    void updateProduct_should_throw_product_already_exists_exception_when_product_name_is_already_in_use() {
+        //  given
+        final Integer ID = 1;
+        final UpdateProductDto productDto = new UpdateProductDto();
+
+        productDto.setName("This Name Already Exists");
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.of(new Product()));
+        when(productRepository.saveAndFlush(any())).thenThrow(DataIntegrityViolationException.class);
+
+        // then
+        assertThrows(ProductAlreadyExistsException.class, () -> productService.updateProduct(ID, productDto));
+    }
+
+    @Test
+    void updateProduct_should_not_call_repository_save_when_there_is_nothing_to_update_empty_fields() throws Exception {
+        //  given
+        final Integer ID = 1;
+        final String INITIAL_NAME = "My Product";
+        final BigDecimal INITIAL_PRICE = BigDecimal.valueOf(2.95);
+
+        UpdateProductDto productDto = new UpdateProductDto();
+
+        Product initialProduct = new Product();
+        initialProduct.setId(ID);
+        initialProduct.setName(INITIAL_NAME);
+        initialProduct.setPrice(INITIAL_PRICE);
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.of(initialProduct));
+
+        // then
+        Product returnedProduct = productService.updateProduct(ID, productDto);
+        assertThat(returnedProduct.getName(), equalTo(INITIAL_NAME));
+        assertThat(returnedProduct.getPrice(), equalTo(INITIAL_PRICE));
+
+        verify(productRepository, times(1)).findById(ID);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void updateProduct_should_not_call_repository_save_when_there_is_nothing_to_update_equal_property_values()
+            throws Exception {
+
+        //  given
+        final Integer ID = 1;
+        final String INITIAL_NAME = "My Product";
+        final BigDecimal INITIAL_PRICE = BigDecimal.valueOf(2.95);
+
+        UpdateProductDto productDto = new UpdateProductDto();
+        productDto.setName(INITIAL_NAME);
+        productDto.setPrice(INITIAL_PRICE);
+
+        Product initialProduct = new Product();
+        initialProduct.setId(ID);
+        initialProduct.setName(INITIAL_NAME);
+        initialProduct.setPrice(INITIAL_PRICE);
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.of(initialProduct));
+
+        // then
+        Product returnedProduct = productService.updateProduct(ID, productDto);
+        assertThat(returnedProduct.getName(), equalTo(INITIAL_NAME));
+        assertThat(returnedProduct.getPrice(), equalTo(INITIAL_PRICE));
+
+        verify(productRepository, times(1)).findById(ID);
+        verifyNoMoreInteractions(productRepository);
     }
 }

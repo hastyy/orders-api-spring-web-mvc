@@ -1,6 +1,7 @@
 package com.example.ordersapi.product.service;
 
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -14,4 +15,7 @@ public interface ProductService {
     Product getOneProduct(Integer id) throws ProductNotFoundException;
 
     Product createProduct(CreateProductDto productDto) throws ProductAlreadyExistsException;
+
+    Product updateProduct(Integer id, UpdateProductDto productDto)
+            throws ProductNotFoundException,ProductAlreadyExistsException;
 }

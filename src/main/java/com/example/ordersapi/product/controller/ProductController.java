@@ -2,6 +2,7 @@ package com.example.ordersapi.product.controller;
 
 import com.example.ordersapi.product.api.ProductAPI;
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -55,6 +56,21 @@ public class ProductController implements ProductAPI {
 
         log.info("Created product: {}", product.getName());
         log.debug("Product: {}", product);
+
+        return product;
+    }
+
+    @Override
+    public Product updateProduct(Integer id, @Valid UpdateProductDto productDto) throws ProductNotFoundException,
+            ProductAlreadyExistsException {
+
+        log.info("Updating product {}", id);
+        log.debug("Update Product DTO: {}", productDto);
+
+        Product product = productService.updateProduct(id, productDto);
+
+        log.info("Updated product {}", id);
+        log.debug("Updated Product: {}", product);
 
         return product;
     }

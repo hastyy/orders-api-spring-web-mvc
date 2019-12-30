@@ -1,6 +1,7 @@
 package com.example.ordersapi.product.service.impl;
 
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -10,6 +11,7 @@ import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,13 +38,69 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(CreateProductDto productDto) throws ProductAlreadyExistsException {
-        try {
-            Product product = productMapper.createProductDtoToProduct(productDto);
-            Product savedProduct = productRepository.save(product);
+        Product product = productMapper.createProductDtoToProduct(productDto);
+        Product savedProduct = saveProduct(product);
 
-            return savedProduct;
+        return savedProduct;
+    }
+
+    private Product saveProduct(Product product) throws ProductAlreadyExistsException {
+        try {
+            return productRepository.saveAndFlush(product);
         } catch (DataIntegrityViolationException ex) {
-            throw new ProductAlreadyExistsException(productDto.getName());
+            throw new ProductAlreadyExistsException(product.getName());
         }
     }
+
+    /**
+     * Method needs to be wrapped in a transaction because we are making two database queries:
+     *  1. Finding the Product by id (read)
+     *  2. Updating found product (write)
+     *
+     *  Other database clients might perform a write operation over the same entity between our read and write,
+     *  which would cause inconsistencies in the system. Thus, we have to operate over a snapshot of the database and
+     *  commit or rollback (and probably re-attempt the operation?) depending if its state has changed meanwhile.
+     */
+    @Override
+    @Transactional(rollbackFor = {ProductNotFoundException.class, ProductAlreadyExistsException.class})
+    public Product updateProduct(Integer id, UpdateProductDto productDto) throws ProductNotFoundException,
+            ProductAlreadyExistsException {
+
+        for (int i = 0; i < 1000; i++);
+
+        Product product = getOneProduct(id);
+
+        if (update(product, productDto)) {
+            saveProduct(product);
+        }
+
+        return product;
+    }
+
+    private boolean update(Product product, UpdateProductDto productDto) {
+        boolean productWasUpdated = false;
+
+        if (productDto.getName() != null && !productDto.getName().equals(product.getName())) {
+            product.setName(productDto.getName());
+            productWasUpdated = true;
+        }
+
+        if (productDto.getDescription() != null && !productDto.getDescription().equals(product.getDescription())) {
+            product.setDescription(productDto.getDescription());
+            productWasUpdated = true;
+        }
+
+        if (productDto.getImageUrl() != null && !productDto.getImageUrl().equals(product.getImageUrl())) {
+            product.setImageUrl(productDto.getImageUrl());
+            productWasUpdated = true;
+        }
+
+        if (productDto.getPrice() != null && !productDto.getPrice().equals(product.getPrice())) {
+            product.setPrice(productDto.getPrice());
+            productWasUpdated = true;
+        }
+
+        return productWasUpdated;
+    }
+
 }

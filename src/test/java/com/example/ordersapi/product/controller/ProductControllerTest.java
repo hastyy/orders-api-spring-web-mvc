@@ -2,6 +2,7 @@ package com.example.ordersapi.product.controller;
 
 import com.example.ordersapi.product.api.ProductAPI;
 import com.example.ordersapi.product.api.dto.CreateProductDto;
+import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
@@ -24,9 +25,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -176,6 +176,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -195,6 +197,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -214,6 +218,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -233,6 +239,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -250,6 +258,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -269,6 +279,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -288,6 +300,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -309,6 +323,8 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test
@@ -333,6 +349,80 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(productDto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
+    }
+
+    @Test
+    void updateProduct_should_return_updated_product_and_200_when_product_is_successfully_updated() throws Exception {
+        // given
+        final Integer ID = 1;
+        final String NAME = "My Product";
+        final BigDecimal PRICE = BigDecimal.valueOf(2.95);
+
+        UpdateProductDto productDto = new UpdateProductDto();
+        productDto.setName(NAME);
+        productDto.setPrice(PRICE);
+
+        Product updatedProduct = new Product();
+        updatedProduct.setId(ID);
+        updatedProduct.setName(NAME);
+        updatedProduct.setPrice(PRICE);
+
+        // when
+        when(productService.updateProduct(ID, productDto)).thenReturn(updatedProduct);
+
+        // then
+        MvcResult response = mockMvc.perform(patch("{baseURL}/{id}", ProductAPI.BASE_URL, ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String responseBodyJson = response.getResponse().getContentAsString();
+        Product responseProduct = jsonMapper.readValue(responseBodyJson, Product.class);
+
+        assertThat(responseProduct.getName(), is(equalTo(productDto.getName())));
+        assertThat(responseProduct.getPrice(), is(equalTo(productDto.getPrice())));
+
+        verify(productService, times(1)).updateProduct(ID, productDto);
+    }
+
+    @Test
+    void updateProduct_should_return_404_when_product_cannot_be_found() throws Exception {
+        // given
+        final Integer ID = 1;
+        final  UpdateProductDto productDto = new UpdateProductDto();
+
+        // when
+        when(productService.updateProduct(ID, productDto)).thenThrow(new ProductNotFoundException(ID));
+
+        // then
+        mockMvc.perform(patch("{baseURL}/{id}", ProductAPI.BASE_URL, ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isNotFound());
+
+        verify(productService, times(1)).updateProduct(ID, productDto);
+    }
+
+    @Test
+    void updateProduct_should_return_409_when_update_product_name_already_exists() throws Exception {
+        // given
+        final Integer ID = 1;
+        final  UpdateProductDto productDto = new UpdateProductDto();
+
+        // when
+        when(productService.updateProduct(ID, productDto)).thenThrow(new ProductAlreadyExistsException("Product Name"));
+
+        // then
+        mockMvc.perform(patch("{baseURL}/{id}", ProductAPI.BASE_URL, ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(productDto)))
+                .andExpect(status().isConflict());
+
+        verify(productService, times(1)).updateProduct(ID, productDto);
     }
 
 }
