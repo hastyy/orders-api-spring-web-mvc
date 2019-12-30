@@ -89,7 +89,7 @@ class ProductControllerTest {
         int id = 1;
 
         // when
-        when(productService.getOneProduct(any())).thenThrow(new ProductNotFoundException(id));
+        when(productService.getOneProduct(id)).thenThrow(new ProductNotFoundException(id));
 
         // then
         mockMvc.perform(get(ProductAPI.BASE_URL + "/" + id))
@@ -476,6 +476,46 @@ class ProductControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(productService);
+    }
+
+    @Test
+    void getProductById_should_return_found_product_and_200_when_product_with_name_exists() throws Exception {
+        // given
+        final String NAME = "Product Name";
+        final Product product = new Product();
+        product.setName(NAME);
+
+        // when
+        when(productService.getOneProduct(NAME)).thenReturn(product);
+
+        // then
+        MvcResult response = mockMvc.perform(get("{baseURL}/name/{name}", ProductAPI.BASE_URL, NAME))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String responseBodyJson = response.getResponse().getContentAsString();
+        Product responseProduct = jsonMapper.readValue(responseBodyJson, Product.class);
+
+        assertThat(responseProduct, is(equalTo(product)));
+        verify(productService, times(1)).getOneProduct(NAME);
+    }
+
+    @Test
+    void getProductById_should_throw_product_not_found_exception_when_product_with_name_does_not_exist()
+            throws Exception {
+
+        // given
+        final String NAME = "Name For Product That Does Not Exist";
+
+        // when
+        when(productService.getOneProduct(NAME)).thenThrow(new ProductNotFoundException(NAME));
+
+        // then
+        mockMvc.perform(get("{baseURL}/name/{name}", ProductAPI.BASE_URL, NAME))
+                .andExpect(status().isNotFound());
+
+        verify(productService, times(1)).getOneProduct(NAME);
     }
 
 }

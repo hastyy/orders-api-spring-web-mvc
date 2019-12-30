@@ -14,6 +14,8 @@ public interface ProductService {
 
     Product getOneProduct(Integer id) throws ProductNotFoundException;
 
+    Product getOneProduct(String name) throws ProductNotFoundException;
+
     Product createProduct(CreateProductDto productDto) throws ProductAlreadyExistsException;
 
     Product updateProduct(Integer id, UpdateProductDto productDto)

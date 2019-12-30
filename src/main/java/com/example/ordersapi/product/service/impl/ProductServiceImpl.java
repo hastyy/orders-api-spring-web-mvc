@@ -37,6 +37,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public Product getOneProduct(String name) throws ProductNotFoundException {
+        return productRepository.findByName(name)
+                .orElseThrow(() -> new ProductNotFoundException(name));
+    }
+
+    @Override
     public Product createProduct(CreateProductDto productDto) throws ProductAlreadyExistsException {
         Product product = productMapper.createProductDtoToProduct(productDto);
         Product savedProduct = saveProduct(product);

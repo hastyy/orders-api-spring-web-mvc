@@ -48,6 +48,19 @@ public class ProductController implements ProductAPI {
     }
 
     @Override
+    public Product getProductByName(String name) throws ProductNotFoundException {
+
+        log.info("Fetching product with name {}", name);
+
+        Product product = productService.getOneProduct(name);
+
+        log.info("Retuning found product");
+        log.debug("Product: {}", product);
+
+        return product;
+    }
+
+    @Override
     public Product createProduct(@Valid CreateProductDto productDto) throws ProductAlreadyExistsException {
 
         log.info("Creating product: {}", productDto.getName());

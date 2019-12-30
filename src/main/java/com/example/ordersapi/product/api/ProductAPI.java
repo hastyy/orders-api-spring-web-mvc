@@ -23,6 +23,10 @@ public interface ProductAPI {
     @ResponseStatus(HttpStatus.OK)
     Product getProductById(@PathVariable Integer id) throws ProductNotFoundException;
 
+    @GetMapping("name/{name}")
+    @ResponseStatus(HttpStatus.OK)
+    Product getProductByName(@PathVariable String name) throws ProductNotFoundException;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     Product createProduct(@RequestBody CreateProductDto productDto) throws ProductAlreadyExistsException;
@@ -35,4 +39,5 @@ public interface ProductAPI {
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
     Product deleteProduct(@PathVariable Integer id) throws ProductNotFoundException;
+
 }

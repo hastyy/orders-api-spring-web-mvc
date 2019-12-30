@@ -264,7 +264,7 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void deleteProduct_should_throw_product_not_found_exception_when_id_does_not_match_a_product() throws Exception {
+    void deleteProduct_should_throw_product_not_found_exception_when_id_does_not_match_a_product() {
         // given
         final Integer ID = 1;
 
@@ -275,6 +275,41 @@ class ProductServiceImplTest {
         assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(ID));
 
         verify(productRepository, times(1)).findById(ID);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void getOneProduct_should_return_found_product_when_product_with_name_exists() throws Exception {
+        // given
+        final String NAME = "Product Name";
+        final Product product = new Product();
+        product.setName(NAME);
+
+        // when
+        when(productRepository.findByName(NAME)).thenReturn(Optional.of(product));
+
+        // then
+        Product returnedProduct = productService.getOneProduct(NAME);
+
+        assertThat(returnedProduct, is(equalTo(product)));
+
+        verify(productRepository, times(1)).findByName(NAME);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void getOneProduct_should_throw_product_not_found_exception_when_product_with_name_does_not_exist() {
+
+        // given
+        final String NAME = "Name For Product That Does Not Exist";
+
+        // when
+        when(productRepository.findByName(NAME)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(ProductNotFoundException.class, () -> productService.getOneProduct(NAME));
+
+        verify(productRepository, times(1)).findByName(NAME);
         verifyNoMoreInteractions(productRepository);
     }
 
