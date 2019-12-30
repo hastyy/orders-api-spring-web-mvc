@@ -32,4 +32,7 @@ public interface ProductAPI {
     Product updateProduct(@PathVariable Integer id, @RequestBody UpdateProductDto productDto)
             throws ProductNotFoundException, ProductAlreadyExistsException;
 
+    @DeleteMapping("{id}")
+    @ResponseStatus(HttpStatus.OK)
+    Product deleteProduct(@PathVariable Integer id) throws ProductNotFoundException;
 }

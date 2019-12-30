@@ -425,4 +425,57 @@ class ProductControllerTest {
         verify(productService, times(1)).updateProduct(ID, productDto);
     }
 
+    @Test
+    void deleteProduct_should_return_deleted_product_and_200_when_product_is_found() throws Exception {
+        // given
+        final Integer ID = 1;
+        final Product product = new Product();
+        product.setId(ID);
+
+        // when
+        when(productService.deleteProduct(ID)).thenReturn(product);
+
+        // then
+        MvcResult response = mockMvc.perform(delete("{baseURL}/{id}", ProductAPI.BASE_URL, ID))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String responseBodyJson = response.getResponse().getContentAsString();
+        Product responseProduct = jsonMapper.readValue(responseBodyJson, Product.class);
+
+        assertThat(responseProduct.getId(), is(equalTo(product.getId())));
+
+        verify(productService, times(1)).deleteProduct(ID);
+    }
+
+    @Test
+    void deleteProduct_should_return_404_when_product_is_not_found() throws Exception {
+        // given
+        final Integer ID = 1;
+
+        // when
+        when(productService.deleteProduct(ID)).thenThrow(new ProductNotFoundException(ID));
+
+        // then
+        mockMvc.perform(delete("{baseURL}/{id}", ProductAPI.BASE_URL, ID))
+                .andExpect(status().isNotFound());
+
+        verify(productService, times(1)).deleteProduct(ID);
+    }
+
+    @Test
+    void deleteProduct_should_return_400_when_id_is_invalid() throws Exception {
+        // given
+        final String INVALID_ID = "id-not-valid";
+
+        // when
+
+        // then
+        mockMvc.perform(delete("{baseURL}/{id}", ProductAPI.BASE_URL, INVALID_ID))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
+    }
+
 }

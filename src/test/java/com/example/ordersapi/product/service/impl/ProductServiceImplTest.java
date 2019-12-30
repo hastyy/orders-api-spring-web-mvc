@@ -22,6 +22,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -242,4 +243,39 @@ class ProductServiceImplTest {
         verify(productRepository, times(1)).findById(ID);
         verifyNoMoreInteractions(productRepository);
     }
+
+    @Test
+    void deleteProduct_should_return_deleted_product() throws Exception {
+        // given
+        final Integer ID = 1;
+        final Product product = new Product();
+        product.setId(ID);
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.of(product));
+        // Don't need to mock productRepository.delete(product)
+
+        // then
+        Product returnedProduct = productService.deleteProduct(ID);
+        assertThat(returnedProduct.getId(), is(equalTo(product.getId())));
+
+        verify(productRepository, times(1)).findById(ID);
+        verify(productRepository, times(1)).delete(product);
+    }
+
+    @Test
+    void deleteProduct_should_throw_product_not_found_exception_when_id_does_not_match_a_product() throws Exception {
+        // given
+        final Integer ID = 1;
+
+        // when
+        when(productRepository.findById(ID)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(ProductNotFoundException.class, () -> productService.deleteProduct(ID));
+
+        verify(productRepository, times(1)).findById(ID);
+        verifyNoMoreInteractions(productRepository);
+    }
+
 }

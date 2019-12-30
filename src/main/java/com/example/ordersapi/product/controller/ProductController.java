@@ -75,4 +75,17 @@ public class ProductController implements ProductAPI {
         return product;
     }
 
+    @Override
+    public Product deleteProduct(Integer id) throws ProductNotFoundException {
+
+        log.info("Deleting product with id {}", id);
+
+        Product product = productService.deleteProduct(id);
+
+        log.info("Retuning deleted product");
+        log.debug("Product: {}", product);
+
+        return product;
+    }
+
 }

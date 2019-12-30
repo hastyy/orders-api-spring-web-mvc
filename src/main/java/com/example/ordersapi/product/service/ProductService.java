@@ -18,4 +18,6 @@ public interface ProductService {
 
     Product updateProduct(Integer id, UpdateProductDto productDto)
             throws ProductNotFoundException,ProductAlreadyExistsException;
+
+    Product deleteProduct(Integer id) throws ProductNotFoundException;
 }

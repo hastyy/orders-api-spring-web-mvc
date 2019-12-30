@@ -62,11 +62,9 @@ public class ProductServiceImpl implements ProductService {
      *  commit or rollback (and probably re-attempt the operation?) depending if its state has changed meanwhile.
      */
     @Override
-    @Transactional(rollbackFor = {ProductNotFoundException.class, ProductAlreadyExistsException.class})
+    @Transactional(rollbackFor = Exception.class)
     public Product updateProduct(Integer id, UpdateProductDto productDto) throws ProductNotFoundException,
             ProductAlreadyExistsException {
-
-        for (int i = 0; i < 1000; i++);
 
         Product product = getOneProduct(id);
 
@@ -101,6 +99,24 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return productWasUpdated;
+    }
+
+    /**
+     * Method needs to be wrapped in a transaction because we are making two database queries:
+     *  1. Finding the Product by id (read)
+     *  2. Delete found product (write)
+     *
+     *  Other database clients might perform a write operation over the same entity between our read and write,
+     *  which would cause inconsistencies in the system. Thus, we have to operate over a snapshot of the database and
+     *  commit or rollback (and probably re-attempt the operation?) depending if its state has changed meanwhile.
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Product deleteProduct(Integer id) throws ProductNotFoundException {
+        Product product = getOneProduct(id);
+        productRepository.delete(product);
+
+        return product;
     }
 
 }
