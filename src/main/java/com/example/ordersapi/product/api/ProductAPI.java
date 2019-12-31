@@ -6,10 +6,14 @@ import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import java.util.Collection;
 
+@Validated
 @RequestMapping(ProductAPI.BASE_URL)
 public interface ProductAPI {
 
@@ -17,7 +21,8 @@ public interface ProductAPI {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    Set<Product> getAllProducts();
+    Collection<Product> getAllProducts(@Positive @RequestParam(defaultValue = "1") Integer page,
+                                       @Positive @RequestParam(defaultValue = Integer.MAX_VALUE+"") Integer size);
 
     @GetMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -29,11 +34,11 @@ public interface ProductAPI {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    Product createProduct(@RequestBody CreateProductDto productDto) throws ProductAlreadyExistsException;
+    Product createProduct(@Valid @RequestBody CreateProductDto productDto) throws ProductAlreadyExistsException;
 
     @PatchMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    Product updateProduct(@PathVariable Integer id, @RequestBody UpdateProductDto productDto)
+    Product updateProduct(@PathVariable Integer id, @Valid @RequestBody UpdateProductDto productDto)
             throws ProductNotFoundException, ProductAlreadyExistsException;
 
     @DeleteMapping("{id}")

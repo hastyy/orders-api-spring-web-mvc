@@ -9,12 +9,15 @@ import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Set;
+import javax.validation.constraints.Positive;
+import java.util.Collection;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 public class ProductController implements ProductAPI {
@@ -22,11 +25,11 @@ public class ProductController implements ProductAPI {
     private final ProductService productService;
 
     @Override
-    public Set<Product> getAllProducts() {
+    public Collection<Product> getAllProducts(@Positive Integer page, @Positive Integer size) {
 
         log.info("Listing products");
 
-        Set<Product> products = productService.getAllProducts();
+        Collection<Product> products = productService.getProductsPage(page, size);
 
         log.info("Returning #{} products", products.size());
         log.debug("Products: {}", products);

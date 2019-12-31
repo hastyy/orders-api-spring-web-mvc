@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 
 @Slf4j
@@ -40,5 +41,17 @@ public class RestControllerExceptionHandler {
         String requiredType = requiredTypeParts[requiredTypeParts.length - 1].toLowerCase();
 
         return String.format("%s must be of type %s", ex.getName(), requiredType);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public void handleValidationException(ConstraintViolationException ex,
+                                          HttpServletResponse response) throws IOException {
+
+        log.warn(ex.getMessage());
+
+        String[] messageParts = ex.getMessage().split("\\.");
+        String message = messageParts[messageParts.length -1];
+
+        response.sendError(HttpStatus.BAD_REQUEST.value(), message);
     }
 }

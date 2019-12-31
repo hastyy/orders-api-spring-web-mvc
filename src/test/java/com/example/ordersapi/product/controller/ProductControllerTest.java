@@ -8,6 +8,7 @@ import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,8 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,6 +43,7 @@ class ProductControllerTest {
     private MockMvc mockMvc;
 
     @Test
+    @Disabled
     void getAllProducts_should_return_found_products() throws Exception {
         // given
         Product product1 = new Product();
@@ -63,6 +64,76 @@ class ProductControllerTest {
         mockMvc.perform(get(ProductAPI.BASE_URL))
                 .andExpect(status().is(HttpStatus.OK.value()))
                 .andExpect(content().json(expectedProductsJson));
+    }
+
+    @Test
+    void getAllProducts_should_return_all_available_products() throws Exception {
+        // given
+        final int PRODUCT_COUNT = 1000;
+        List<Product> products = new ArrayList<>(PRODUCT_COUNT);
+        for (int i = 0; i < PRODUCT_COUNT; i++) {
+            Product p = new Product();
+            p.setId(i+1);
+
+            products.add(p);
+        }
+
+        int page = 1;
+        int size = Integer.MAX_VALUE;
+
+        // when
+        when(productService.getProductsPage(page, size)).thenReturn(products);
+
+        // then
+        MvcResult response = mockMvc.perform(get("{baseURL}", ProductAPI.BASE_URL))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String responseBodyJson = response.getResponse().getContentAsString();
+        List responseProducts = jsonMapper.readValue(responseBodyJson, List.class);
+
+        assertThat(responseProducts.size(), is(equalTo(products.size())));
+
+        verify(productService, times(1)).getProductsPage(page, size);
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    void getAllProducts_should_return_a_page_of_products() throws Exception {
+        // given
+        int page = 5;
+        int size = 10;
+
+        // then
+        mockMvc.perform(get("{baseURL}", ProductAPI.BASE_URL)
+                .param("page", String.valueOf(page))
+                .param("size", String.valueOf(size)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+
+        verify(productService, times(1)).getProductsPage(page, size);
+        verifyNoMoreInteractions(productService);
+    }
+
+    @Test
+    void getAllProducts_should_return_400_when_page_number_is_less_than_one() throws Exception {
+        mockMvc.perform(get("{baseURL}", ProductAPI.BASE_URL)
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
+    }
+
+    @Test
+    void getAllProducts_should_return_400_when_page_size_is_less_than_one() throws Exception {
+        mockMvc.perform(get("{baseURL}", ProductAPI.BASE_URL)
+                .param("page", "10")
+                .param("size", "0"))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(productService);
     }
 
     @Test

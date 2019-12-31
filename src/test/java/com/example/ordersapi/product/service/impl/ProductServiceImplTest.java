@@ -13,12 +13,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,12 +47,57 @@ class ProductServiceImplTest {
         Product product2 = new Product();
         product2.setId(2);
 
+        // when
         List<Product> toReturn = Arrays.asList(product1, product2);
         when(productRepository.findAll()).thenReturn(toReturn);
 
         // then
         Set<Product> returnedProducts = productService.getAllProducts();
         assertEquals(toReturn.size(), returnedProducts.size());
+    }
+
+    @Test
+    void getProductsPage_should_return_a_list_with_page_contents() {
+        // given
+        int page = 1;
+        int size = 10;
+
+        List<Product> products = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            Product p = new Product();
+            p.setId(i+1);
+
+            products.add(p);
+        }
+
+        // when
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        when(productRepository.findAll(pageRequest)).thenReturn(new PageImpl<>(products));
+
+        // then
+        List<Product> returnedProducts = productService.getProductsPage(page, size);
+        assertThat(returnedProducts.size(), is(equalTo(products.size())));
+
+        verify(productRepository, times(1)).findAll(pageRequest);
+        verifyNoMoreInteractions(productRepository);
+    }
+
+    @Test
+    void getProductsPage_should_return_an_empty_list() {
+        // given
+        int page = 2;
+        int size = Integer.MAX_VALUE;
+
+        // when
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        when(productRepository.findAll(pageRequest)).thenReturn(new PageImpl<>(Collections.emptyList()));
+
+        // then
+        List<Product> returnedProducts = productService.getProductsPage(page, size);
+        assertThat(returnedProducts.size(), is(equalTo(0)));
+
+        verify(productRepository, times(1)).findAll(pageRequest);
+        verifyNoMoreInteractions(productRepository);
     }
 
     @Test

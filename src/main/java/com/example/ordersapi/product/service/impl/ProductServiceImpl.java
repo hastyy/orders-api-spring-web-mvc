@@ -10,9 +10,11 @@ import com.example.ordersapi.product.repository.ProductRepository;
 import com.example.ordersapi.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -28,6 +30,11 @@ public class ProductServiceImpl implements ProductService {
     public Set<Product> getAllProducts() {
         return StreamSupport.stream(productRepository.findAll().spliterator(), false)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<Product> getProductsPage(Integer page, Integer size) {
+        return productRepository.findAll(PageRequest.of(page - 1, size)).getContent();
     }
 
     @Override

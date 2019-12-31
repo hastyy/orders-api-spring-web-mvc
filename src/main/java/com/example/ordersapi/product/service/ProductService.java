@@ -6,11 +6,14 @@ import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 
+import java.util.List;
 import java.util.Set;
 
 public interface ProductService {
 
     Set<Product> getAllProducts();
+
+    List<Product> getProductsPage(Integer page, Integer size);
 
     Product getOneProduct(Integer id) throws ProductNotFoundException;
 
