@@ -7,6 +7,7 @@ import com.example.ordersapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class DataLoader implements CommandLineRunner {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -58,7 +60,7 @@ public class DataLoader implements CommandLineRunner {
         User user = new User();
 
         user.setEmail("test@test.com");
-        user.setPassword("test_password");
+        user.setPassword(passwordEncoder.encode("test_password"));
 
         userRepository.saveAndFlush(user);
 

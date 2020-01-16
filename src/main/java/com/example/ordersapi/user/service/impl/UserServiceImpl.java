@@ -8,6 +8,7 @@ import com.example.ordersapi.user.repository.UserRepository;
 import com.example.ordersapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,11 +17,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User registerUser(UserDto userDto) throws EmailAlreadyInUseException {
         try {
             User user = userMapper.userDtoToUser(userDto);
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             User savedUser = userRepository.saveAndFlush(user);
 
             return savedUser;

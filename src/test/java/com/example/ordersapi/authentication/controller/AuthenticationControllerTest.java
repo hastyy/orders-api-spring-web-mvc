@@ -1,24 +1,11 @@
 package com.example.ordersapi.authentication.controller;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.example.ordersapi.authentication.api.AuthenticationAPI;
 import com.example.ordersapi.authentication.api.dto.AuthCredentials;
 import com.example.ordersapi.authentication.api.dto.AuthToken;
 import com.example.ordersapi.authentication.model.Principal;
-import com.example.ordersapi.authentication.service.JwtService;
+import com.example.ordersapi.testutils.SecurityEnabledTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,24 +15,28 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-@WebMvcTest(controllers = AuthenticationController.class)
-class AuthenticationControllerTest {
+import java.util.Collections;
 
-    /**
-     * Mocked bean because it's a dependency of the SecurityConfiguration
-     */
-    @MockBean
-    private UserDetailsService userDetailsService;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(controllers = AuthenticationController.class)
+class AuthenticationControllerTest extends SecurityEnabledTest {
 
     @MockBean
     private AuthenticationManager authenticationManager;
 
-    @MockBean
-    private JwtService jwtService;
+    // Bean already mocked in superclass
+    // @MockBean
+    // private JwtService jwtService;
 
     @Autowired
     private ObjectMapper jsonMapper;

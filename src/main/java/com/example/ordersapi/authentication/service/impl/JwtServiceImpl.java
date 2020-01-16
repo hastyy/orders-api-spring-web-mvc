@@ -4,13 +4,14 @@ import com.example.ordersapi.authentication.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.util.Date;
-import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.function.Function;
 
 @Service
 public class JwtServiceImpl implements JwtService {
@@ -18,20 +19,12 @@ public class JwtServiceImpl implements JwtService {
     private final String secret;
     private final long expiration_period;
 
-    /*
     @Autowired
     public JwtServiceImpl(@Value("${jwt.secret}") String secret,
         @Value("${jwt.expiration}") long expiration_period) {
 
         this.secret = secret;
         this.expiration_period = expiration_period;
-    }
-
-     */
-
-    public JwtServiceImpl() {
-        this.secret = "this-is-something-temporary";
-        this.expiration_period = 1000000L;
     }
 
     @Override

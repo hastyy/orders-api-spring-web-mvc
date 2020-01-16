@@ -7,6 +7,7 @@ import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
 import com.example.ordersapi.product.service.ProductService;
+import com.example.ordersapi.testutils.SecurityEnabledTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -15,13 +16,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,13 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ProductController.class)
-class ProductControllerTest {
-
-    /**
-     * Mocked bean because it's a dependency of the SecurityConfiguration
-     */
-    @MockBean
-    private UserDetailsService userDetailsService;
+class ProductControllerTest extends SecurityEnabledTest {
 
     @MockBean
     private ProductService productService;

@@ -11,12 +11,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -27,6 +27,9 @@ class UserServiceImplTest {
     @Mock
     UserMapper userMapper;
 
+    @Mock
+    PasswordEncoder passwordEncoder;
+
     @InjectMocks
     UserServiceImpl userService;
 
@@ -36,6 +39,7 @@ class UserServiceImplTest {
         final Integer ID = 1;
         final String EMAIL = "test@test.com";
         final String PASSWORD = "test_password";
+        final String ENCODED_PASSWORD = "73bd68e2fe18622931676e4d020e9718efe84985";
 
         UserDto userDto = new UserDto();
         userDto.setEmail(EMAIL);
@@ -45,21 +49,28 @@ class UserServiceImplTest {
         mappedUser.setEmail(EMAIL);
         mappedUser.setPassword(PASSWORD);
 
+        User encodedPasswordUser = new User();
+        encodedPasswordUser.setEmail(EMAIL);
+        encodedPasswordUser.setPassword(ENCODED_PASSWORD);
+
         User expectedUser = new User();
         expectedUser.setId(ID);
         expectedUser.setEmail(EMAIL);
-        expectedUser.setPassword(PASSWORD);
+        expectedUser.setPassword(ENCODED_PASSWORD);
 
         // when
         when(userMapper.userDtoToUser(userDto)).thenReturn(mappedUser);
-        when(userRepository.saveAndFlush(mappedUser)).thenReturn(expectedUser);
+        when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(userRepository.saveAndFlush(encodedPasswordUser)).thenReturn(expectedUser);
 
         // then
         User savedUser = userService.registerUser(userDto);
         assertThat(savedUser, equalTo(expectedUser));
         verify(userMapper, times(1)).userDtoToUser(userDto);
         verifyNoMoreInteractions(userMapper);
-        verify(userRepository, times(1)).saveAndFlush(mappedUser);
+        verify(passwordEncoder, times(1)).encode(PASSWORD);
+        verifyNoMoreInteractions(passwordEncoder);
+        verify(userRepository, times(1)).saveAndFlush(encodedPasswordUser);
         verifyNoMoreInteractions(userRepository);
     }
 
@@ -68,6 +79,7 @@ class UserServiceImplTest {
         // given
         final String EMAIL = "test@test.com";
         final String PASSWORD = "test_password";
+        final String ENCODED_PASSWORD = "73bd68e2fe18622931676e4d020e9718efe84985";
 
         UserDto userDto = new UserDto();
         userDto.setEmail(EMAIL);
@@ -77,15 +89,22 @@ class UserServiceImplTest {
         mappedUser.setEmail(EMAIL);
         mappedUser.setPassword(PASSWORD);
 
+        User encodedPasswordUser = new User();
+        encodedPasswordUser.setEmail(EMAIL);
+        encodedPasswordUser.setPassword(ENCODED_PASSWORD);
+
         // when
         when(userMapper.userDtoToUser(userDto)).thenReturn(mappedUser);
-        when(userRepository.saveAndFlush(mappedUser)).thenThrow(DataIntegrityViolationException.class);
+        when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
+        when(userRepository.saveAndFlush(encodedPasswordUser)).thenThrow(DataIntegrityViolationException.class);
 
         // then
         assertThrows(EmailAlreadyInUseException.class, () -> userService.registerUser(userDto));
         verify(userMapper, times(1)).userDtoToUser(userDto);
         verifyNoMoreInteractions(userMapper);
-        verify(userRepository, times(1)).saveAndFlush(mappedUser);
+        verify(passwordEncoder, times(1)).encode(PASSWORD);
+        verifyNoMoreInteractions(passwordEncoder);
+        verify(userRepository, times(1)).saveAndFlush(encodedPasswordUser);
         verifyNoMoreInteractions(userRepository);
     }
 

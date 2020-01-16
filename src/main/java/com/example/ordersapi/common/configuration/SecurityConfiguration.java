@@ -1,9 +1,9 @@
 package com.example.ordersapi.common.configuration;
 
 import com.example.ordersapi.authentication.api.AuthenticationAPI;
+import com.example.ordersapi.authentication.filter.AuthorizationFilter;
 import com.example.ordersapi.product.api.ProductAPI;
 import com.example.ordersapi.user.api.UserAPI;
-import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +14,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private boolean h2ConsoleEnabled;
 
     private final UserDetailsService userDetailsService;
+    private final AuthorizationFilter authorizationFilter;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -53,6 +57,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(ProductAPI.BASE_URL + "/**").permitAll()
                 .antMatchers(UserAPI.BASE_URL + "/**").permitAll()
             .anyRequest().authenticated();
+
+        http.addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     private AuthenticationEntryPoint unauthorizedHandler() {
@@ -73,6 +79,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 }
