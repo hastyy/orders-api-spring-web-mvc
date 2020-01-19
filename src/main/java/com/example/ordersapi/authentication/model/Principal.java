@@ -1,18 +1,21 @@
 package com.example.ordersapi.authentication.model;
 
-import java.util.Collection;
-import java.util.Collections;
+import com.example.ordersapi.user.entity.User;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Data
+import java.util.Collection;
+import java.util.Collections;
+
+@Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 public class Principal implements UserDetails {
 
-    private String email;
-    private String password;
+    private User userEntity;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -21,12 +24,12 @@ public class Principal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return userEntity.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return userEntity.getEmail();
     }
 
     @Override

@@ -37,7 +37,7 @@ class UserDetailsServiceJpaTest {
         foundUser.setEmail(EMAIL);
         foundUser.setPassword(PASSWORD);
 
-        final UserDetails expectedDetails = new Principal(EMAIL, PASSWORD);
+        final UserDetails expectedDetails = new Principal(foundUser);
 
         // when
         when(userRepository.findUserByEmail(EMAIL)).thenReturn(Optional.of(foundUser));

@@ -1,7 +1,6 @@
 package com.example.ordersapi.authentication.service.impl;
 
 import com.example.ordersapi.authentication.model.Principal;
-import com.example.ordersapi.user.entity.User;
 import com.example.ordersapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,12 +17,8 @@ public class UserDetailsServiceJpa implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findUserByEmail(email)
-            .map(this::userEntityToUserDetails)
+            .map(Principal::new)
             .orElseThrow(() -> new UsernameNotFoundException("Could not find user in the database"));
-    }
-
-    private UserDetails userEntityToUserDetails(User user) {
-        return new Principal(user.getEmail(), user.getPassword());
     }
 
 }

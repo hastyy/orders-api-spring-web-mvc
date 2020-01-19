@@ -5,6 +5,7 @@ import com.example.ordersapi.authentication.api.dto.AuthCredentials;
 import com.example.ordersapi.authentication.api.dto.AuthToken;
 import com.example.ordersapi.authentication.model.Principal;
 import com.example.ordersapi.testutils.SecurityEnabledTest;
+import com.example.ordersapi.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,7 +141,10 @@ class AuthenticationControllerTest extends SecurityEnabledTest {
     }
 
     private Authentication getPrincipal(String username, String password) {
-        return new UsernamePasswordAuthenticationToken(new Principal(username, password), null, Collections.emptyList());
+        User userEntity = new User();
+        userEntity.setEmail(username);
+        userEntity.setPassword(password);
+        return new UsernamePasswordAuthenticationToken(new Principal(userEntity), null, Collections.emptyList());
     }
 
 }
