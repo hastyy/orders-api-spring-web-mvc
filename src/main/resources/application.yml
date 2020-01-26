@@ -1,0 +1,6 @@
+logging.level:
+  com.example.ordersapi: debug
+
+jwt:
+  secret: should-not-be-exposed-here
+  expiration: 36000000

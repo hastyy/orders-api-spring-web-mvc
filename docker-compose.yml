@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+  orders-api:
+    image: orders-api
+    container_name: orders-api
+    ports:
+      - '8080:8080'
+    networks:
+      - orders-api-network
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:9.6
+    container_name: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ordersapi
+    networks:
+      - orders-api-network
+
+networks:
+  orders-api-network:
+    driver: bridge

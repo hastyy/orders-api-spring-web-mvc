@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ordersapi
+    url: jdbc:postgresql://postgres/ordersapi
     username: postgres
     password: postgres
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL95Dialect
     hibernate:
       ddl-auto: create

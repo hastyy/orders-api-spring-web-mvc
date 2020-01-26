@@ -11,7 +11,6 @@ import com.example.ordersapi.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -22,11 +21,6 @@ import javax.validation.Valid;
 public class OrderController implements OrderAPI {
 
     private final OrderService orderService;
-
-    @GetMapping
-    public String hello() {
-        return "Hello from OrderController !";
-    }
 
     @Override
     public Order create(Authentication authContext, @Valid OrderDto orderDto)

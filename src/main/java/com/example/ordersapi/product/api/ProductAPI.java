@@ -5,6 +5,9 @@ import com.example.ordersapi.product.api.dto.UpdateProductDto;
 import com.example.ordersapi.product.entity.Product;
 import com.example.ordersapi.product.exception.ProductAlreadyExistsException;
 import com.example.ordersapi.product.exception.ProductNotFoundException;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +24,11 @@ public interface ProductAPI {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @ApiOperation(value = "Get a page of products", notes = "Given the page number and the amount of products per " +
+            "page, the API will chunk the whole products collection into n pieces of the given size and get the given" +
+            "nth piece.")
+    @ApiResponses({@ApiResponse(code = 200, message = "The request has been successful. A list of products can be " +
+            "found in the response.")})
     Collection<Product> getAllProducts(@Positive @RequestParam(defaultValue = "1") Integer page,
                                        @Positive @RequestParam(defaultValue = Integer.MAX_VALUE+"") Integer size);
 

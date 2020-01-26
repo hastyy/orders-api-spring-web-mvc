@@ -1,9 +1,7 @@
 package com.example.ordersapi.common.configuration;
 
-import com.example.ordersapi.authentication.api.AuthenticationAPI;
 import com.example.ordersapi.authentication.filter.AuthorizationFilter;
-import com.example.ordersapi.product.api.ProductAPI;
-import com.example.ordersapi.user.api.UserAPI;
+import com.example.ordersapi.order.api.OrderAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -53,10 +51,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
             .authorizeRequests()
+                .antMatchers(OrderAPI.BASE_URL + "/**").authenticated()
+                .anyRequest().permitAll();
+
+                /*
                 .antMatchers(AuthenticationAPI.BASE_URL + "/**").permitAll()
                 .antMatchers(ProductAPI.BASE_URL + "/**").permitAll()
                 .antMatchers(UserAPI.BASE_URL + "/**").permitAll()
             .anyRequest().authenticated();
+
+                 */
 
         http.addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class);
     }
